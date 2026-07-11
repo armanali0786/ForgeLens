@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Asset {
+  id       Int      @id @default(autoincrement())
+  name     String
+  type     String
+  location String?
+
+  sensors        Sensor[]
+  anomalies      Anomaly[]
+  patternWeights PatternWeight[]
+
+  @@map("assets")
+}
+
+model Sensor {
+  id             Int    @id @default(autoincrement())
+  assetId        Int    @map("asset_id")
+  name           String
+  unit           String
+  normalRangeMin Decimal @map("normal_range_min")
+  normalRangeMax Decimal @map("normal_range_max")
+
+  asset     Asset       @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  telemetry Telemetry[]
+
+  @@map("sensors")
+}
+
+model Telemetry {
+  id         BigInt   @id @default(autoincrement())
+  sensorId   Int      @map("sensor_id")
+  value      Decimal
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  sensor Sensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId, recordedAt(sort: Desc)], map: "idx_telemetry_sensor_time")
+  @@map("telemetry")
+}
+
+model Anomaly {
+  id          Int      @id @default(autoincrement())
+  assetId     Int      @map("asset_id")
+  detectedAt  DateTime @default(now()) @map("detected_at")
+  riskLevel   String   @map("risk_level")
+  likelyCause String   @map("likely_cause")
+  confidence  Decimal
+  status      String   @default("open")
+
+  asset     Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  evidence  Evidence[]
+  feedback  Feedback[]
+
+  @@map("anomalies")
+}
+
+model Evidence {
+  id                Int     @id @default(autoincrement())
+  anomalyId         Int     @map("anomaly_id")
+  signalName        String  @map("signal_name")
+  changeDescription String  @map("change_description")
+  weight            Decimal
+
+  anomaly Anomaly @relation(fields: [anomalyId], references: [id], onDelete: Cascade)
+
+  @@map("evidence")
+}
+
+model Feedback {
+  id              Int      @id @default(autoincrement())
+  anomalyId       Int      @map("anomaly_id")
+  engineerVerdict String   @map("engineer_verdict")
+  actualCause     String?  @map("actual_cause")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  anomaly Anomaly @relation(fields: [anomalyId], references: [id], onDelete: Cascade)
+
+  @@map("feedback")
+}
+
+model PatternWeight {
+  id              Int      @id @default(autoincrement())
+  assetId         Int      @map("asset_id")
+  patternName     String   @map("pattern_name")
+  weight          Decimal  @default(1.0)
+  correctionCount Int      @default(0) @map("correction_count")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, patternName])
+  @@map("pattern_weights")
+}

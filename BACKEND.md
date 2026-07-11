@@ -127,7 +127,8 @@ CREATE TABLE anomalies (
   risk_level    TEXT NOT NULL CHECK (risk_level IN ('low','medium','high')),
   likely_cause  TEXT NOT NULL,
   confidence    NUMERIC NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
-  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','acknowledged','resolved','snoozed'))
+  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','acknowledged','resolved','snoozed')),
+  narrative     TEXT
 );
 
 CREATE TABLE evidence (
@@ -157,7 +158,7 @@ CREATE TABLE pattern_weights (
 );
 ```
 
-`CHECK` constraints on `risk_level`, `confidence`, `weight`, and `status` push validation into the database itself, not just the application layer — so a bug in the API can't silently write a `confidence` of `1.4` or a `risk_level` of `"extreme"`. `pattern_weights` is the table backing the operator-memory mechanism described in ARCHITECTURE.md §6.
+`CHECK` constraints on `risk_level`, `confidence`, `weight`, and `status` push validation into the database itself, not just the application layer — so a bug in the API can't silently write a `confidence` of `1.4` or a `risk_level` of `"extreme"`. `pattern_weights` is the table backing the operator-memory mechanism described in ARCHITECTURE.md §6. `anomalies.narrative` holds the Explanation Formatter's output (ARCHITECTURE.md §4, ADR-4) — the deterministic template by default, or a Groq-rephrased version of the exact same facts when `LLM_API_KEY`/`LLM_PROVIDER=groq` are set. It's nullable and write-once at detection time, not recomputed on read, unlike the live-rescored `diagnosis` object in the anomaly-detail response.
 
 ## 6. API Reference
 

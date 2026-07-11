@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import { detectAnomaly } from "./engine/detection";
 import { diagnose } from "./engine/correlation";
-import { formatNarrative } from "./engine/explain";
+import { buildNarrative } from "./engine/explain";
 import { emitAnomalyNew } from "./socket";
 
 export const SENSOR_DEFS = [
@@ -136,6 +136,11 @@ async function raiseAnomaly(assetId: number, triggerSignal: string, flag: "out_o
   const diagnosis = await diagnose(assetId, triggerSignal, flag);
   openAnomalyByAsset.set(assetId, diagnosis.primary.patternName);
 
+  // Rephrases the diagnosis already computed above — never decides it. Falls back
+  // to the deterministic template instantly if LLM_API_KEY/LLM_PROVIDER aren't set,
+  // or within GROQ_TIMEOUT_MS if the call fails (see explain.ts).
+  const narrative = await buildNarrative(diagnosis);
+
   const anomaly = await prisma.anomaly.create({
     data: {
       assetId,
@@ -143,6 +148,7 @@ async function raiseAnomaly(assetId: number, triggerSignal: string, flag: "out_o
       likelyCause: diagnosis.primary.label,
       confidence: diagnosis.primary.confidence,
       status: "open",
+      narrative,
       evidence: {
         create: diagnosis.primary.evidence.map((e) => ({
           signalName: e.signalName,
@@ -156,9 +162,5 @@ async function raiseAnomaly(assetId: number, triggerSignal: string, flag: "out_o
 
   console.log(`[simulator] anomaly raised: ${anomaly.asset.name} -> ${anomaly.likelyCause} (${Math.round(diagnosis.primary.confidence * 100)}%)`);
 
-  emitAnomalyNew({
-    anomaly,
-    diagnosis,
-    narrative: formatNarrative(diagnosis),
-  });
+  emitAnomalyNew({ anomaly, diagnosis, narrative });
 }

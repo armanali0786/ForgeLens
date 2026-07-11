@@ -57,6 +57,7 @@ export function AlertDetail({ assetName, anomalyId }: { assetName: string; anoma
               Adjusted · {primary.correctionCount} prior correction{primary.correctionCount === 1 ? "" : "s"}
             </div>
           )}
+          {anomaly.narrative && <p className="narrative">{anomaly.narrative}</p>}
         </div>
 
         {primary && <EvidencePanel evidence={primary.evidence} />}

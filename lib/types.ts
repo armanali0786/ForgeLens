@@ -56,6 +56,7 @@ export interface Anomaly {
   likelyCause: string;
   confidence: string;
   status: AnomalyStatus;
+  narrative: string | null;
   evidence: EvidenceItem[];
   asset: { id: number; name: string; type: string; location: string | null };
   feedback?: Feedback[];

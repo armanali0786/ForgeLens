@@ -54,6 +54,7 @@ model Anomaly {
   likelyCause String   @map("likely_cause")
   confidence  Decimal
   status      String   @default("open")
+  narrative   String?
 
   asset     Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade)
   evidence  Evidence[]

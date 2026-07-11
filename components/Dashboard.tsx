@@ -66,8 +66,21 @@ export function Dashboard() {
   return (
     <div className="app-shell">
       <div className="topbar">
-        <span className="topbar-brand">ForgeLens</span>
-        <span className="topbar-meta">Arman Ali</span>
+        <div className="topbar-left">
+          <span className="topbar-brand">ForgeLens</span>
+          <span className="topbar-subtitle">Industrial Decision Copilot</span>
+        </div>
+        <div className="topbar-right">
+          <span className="live-indicator" data-connected={connected}>
+            <span className="live-dot" aria-hidden="true" />
+            {connected ? "Live" : "Reconnecting"}
+          </span>
+          <span className="topbar-divider" aria-hidden="true" />
+          <span className="topbar-user">
+            <span className="topbar-avatar">AA</span>
+            <span className="topbar-meta">Arman Ali</span>
+          </span>
+        </div>
       </div>
       {!connected && (
         <div className="connection-banner">Live feed disconnected. Showing last known state. Reconnecting…</div>

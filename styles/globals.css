@@ -1,25 +1,24 @@
-@font-face {
-  font-family: "Inter";
-  src: local("Inter");
-}
-
 :root {
-  --bg-base: #12161c;
-  --bg-panel: #1b212a;
-  --bg-inset: #0e1116;
-  --text-primary: #e8eaed;
-  --text-muted: #8a93a1;
+  --bg-base: #191919;
+  --bg-panel: #222222;
+  --bg-inset: #141414;
+  --text-primary: #e8e8e8;
+  --text-muted: #8f8f8f;
   --brand-honeywell-red: #ee3124;
-  --accent-signal: #3da9fc;
+  --accent-signal: #4da3ff;
   --risk-low: #4caf6d;
   --risk-medium: #e0a93e;
   --risk-high: #b0241c;
-  --border-hairline: #2a313c;
+  --risk-high-fg: #ff6a5f;
+  --border-hairline: #333333;
+  --fill-unmatched: #3a3a3a;
   --radius: 4px;
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
   --space-4: 32px;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.28);
+  --shadow-topbar: 0 1px 0 rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.24);
 }
 
 * {
@@ -32,13 +31,15 @@ body {
   margin: 0;
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 code,
 .mono {
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+  font-family: var(--font-mono), "SFMono-Regular", Consolas, Menlo, monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -76,34 +77,122 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
-  padding: 0 var(--space-2);
+  height: 56px;
+  padding: 0 var(--space-3);
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-topbar);
   flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .topbar-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 10px;
   font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.2px;
+  font-size: 16px;
+  letter-spacing: 0.1px;
 }
 
 .topbar-brand::before {
   content: "";
   display: block;
   width: 3px;
-  height: 20px;
+  height: 18px;
   background: var(--brand-honeywell-red);
   border-radius: 2px;
+}
+
+.topbar-subtitle {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 500;
+  padding-top: 2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--risk-low);
+  text-transform: uppercase;
+}
+
+.live-indicator[data-connected="false"] {
+  color: var(--risk-medium);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.live-indicator[data-connected="true"] .live-dot {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-hairline);
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-honeywell-red) 22%, var(--bg-inset));
+  color: var(--text-primary);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .topbar-meta {
   color: var(--text-muted);
   font-size: 13px;
+  font-weight: 500;
 }
 
 .console {
@@ -143,7 +232,7 @@ button {
 }
 
 .asset-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .asset-item[data-active="true"] {
@@ -209,7 +298,7 @@ button {
 }
 
 .risk-badge[data-risk="high"] {
-  color: #ff6a5f;
+  color: var(--risk-high-fg);
   background: rgba(176, 36, 28, 0.18);
 }
 
@@ -254,7 +343,9 @@ button {
 }
 
 .alert-header h1 {
-  font-size: 18px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
@@ -276,12 +367,14 @@ button {
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
   padding: var(--space-2);
+  box-shadow: var(--shadow-panel);
 }
 
 .panel h2 {
-  font-size: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
   margin: 0 0 var(--space-2);
 }
@@ -370,7 +463,7 @@ button {
 }
 
 .evidence-fill[data-matched="false"] {
-  background: var(--border-hairline);
+  background: var(--fill-unmatched);
 }
 
 .evidence-value {
@@ -448,27 +541,34 @@ button {
 
 .feedback-buttons button {
   flex: 1;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: var(--radius);
   border: 1px solid var(--border-hairline);
   background: var(--bg-inset);
   color: var(--text-primary);
   font-weight: 600;
   font-size: 13px;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
 }
 
 .feedback-buttons button:hover {
   border-color: var(--accent-signal);
 }
 
+.feedback-buttons button[data-variant="correct"] {
+  background: color-mix(in srgb, var(--risk-low) 16%, var(--bg-inset));
+  border-color: color-mix(in srgb, var(--risk-low) 45%, var(--border-hairline));
+  color: var(--risk-low);
+}
+
 .feedback-buttons button[data-variant="correct"]:hover {
   border-color: var(--risk-low);
-  color: var(--risk-low);
+  background: color-mix(in srgb, var(--risk-low) 26%, var(--bg-inset));
 }
 
 .feedback-buttons button[data-variant="wrong"]:hover {
   border-color: var(--risk-high);
-  color: #ff6a5f;
+  color: var(--risk-high-fg);
 }
 
 .cause-picker {
@@ -516,7 +616,7 @@ button {
   color: var(--risk-low);
 }
 .history-row .verdict-wrong {
-  color: #ff6a5f;
+  color: var(--risk-high-fg);
 }
 .history-row .verdict-snoozed {
   color: var(--risk-medium);
